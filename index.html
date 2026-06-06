@@ -89,10 +89,11 @@ cat > /mnt/user-data/outputs/smackin-landing.html << 'HTMLEOF'
       <p class="text-slate-500 text-sm font-medium">Join 100k+ snack lovers. Drop your email and unlock the deal instantly.</p>
     </div>
 
-    <div id="popup-form">
+<div id="popup-form">
       <input id="popup-email" type="email" placeholder="your@email.com"
         class="w-full border border-slate-200 rounded-2xl px-4 py-3 text-sm font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-orange-400 mb-3 bg-white/80">
-      <button onclick="submitEmail()" class="cta-pulse w-full bg-orange-500 hover:bg-orange-600 text-white font-black text-sm uppercase tracking-widest py-4 rounded-2xl transition-colors">
+      <!-- Thay đổi nút bấm thành onclick này -->
+      <button onclick="handlePopupSubmit()" id="popup-submit" class="cta-pulse w-full bg-orange-500 hover:bg-orange-600 text-white font-black text-sm uppercase tracking-widest py-4 rounded-2xl transition-colors">
         Claim My Free Shipping &rarr;
       </button>
       <p class="text-center text-xs text-slate-400 mt-3 font-medium">No spam, ever. Unsubscribe anytime.</p>
@@ -703,6 +704,10 @@ cat > /mnt/user-data/outputs/smackin-landing.html << 'HTMLEOF'
       smackinsunflowerseeds.com &rarr;
     </a>
   </div>
+ <div class="max-w-4xl mx-auto px-5 py-8 text-center text-slate-400 text-xs border-t border-slate-100 mt-10">
+    <p class="mb-2">© 2026 Affiliate Review. Not affiliated with or endorsed by SMACKIN'.</p>
+    <p><strong>Independent Review:</strong> This website provides independent evaluations. We may receive a commission if you sign up through our links. This helps us maintain our content at no additional cost to you.</p>
+</div>
 </footer>
 
 <!-- ============================================================
@@ -759,12 +764,43 @@ cat > /mnt/user-data/outputs/smackin-landing.html << 'HTMLEOF'
     });
   },{threshold:0.3});
   document.querySelectorAll('#verdict').forEach(el=>barObs.observe(el));
+
+ function handlePopupSubmit() {
+  const emailInput = document.getElementById('popup-email');
+  const email = emailInput.value.trim();
+  const submitBtn = document.getElementById('popup-submit');
+  
+  if(!email || !email.includes('@')){
+    emailInput.style.borderColor = '#f97316';
+    emailInput.focus();
+    return;
+  }
+
+  submitBtn.innerText = 'Sending...';
+  submitBtn.disabled = true;
+
+  // Link Google Script của bạn
+  const scriptURL = 'https://script.google.com/macros/s/AKfycbzELQv3DoU-LM1DrLtRqYt2npXPf6gJzSDnMmp-NCiLUTUF8GdxkwneHyUiqTBBFKICtw/exec';
+  
+  const formData = new FormData();
+  formData.append('email', email);
+
+  fetch(scriptURL, { 
+      method: 'POST', 
+      mode: 'no-cors', 
+      body: formData 
+  })
+  .then(() => {
+      // Ẩn form và hiện thông báo thành công
+      document.getElementById('popup-form').classList.add('hidden');
+      document.getElementById('popup-success').classList.remove('hidden');
+  })
+  .catch(err => {
+      console.error('Error!', err);
+      submitBtn.innerText = 'Error! Try again.';
+      submitBtn.disabled = false;
+  });
+}
 </script>
 </body>
 </html>
-HTMLEOF
-echo "File created: $(wc -l < /mnt/user-data/outputs/smackin-landing.html) lines"
-Output
-
-File created: 761 lines
-Done
